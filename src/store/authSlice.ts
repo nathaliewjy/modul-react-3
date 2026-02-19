@@ -1,11 +1,13 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { type UserInfo } from "../types"
 
+// 
 export type AuthState = {
   userInfo?: UserInfo
   isLoading: boolean
 }
 
+// state waktu programnya jalan pertama kali, belum login
 const initialState: AuthState = {
   userInfo: undefined,
   isLoading: false

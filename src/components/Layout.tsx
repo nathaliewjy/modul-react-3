@@ -100,7 +100,7 @@ export function Layout(props: PropsWithChildren) {
           if (response.ok) {
             const userData = await response.json()
             // Dispatch lagi sesuai data yang didapat
-            dispatch(authActions.setUserInfo(userData))
+            dispatch(authActions.setUserInfo(userData.user))
           } else {
             // Jika token sudah tidak valid, hapus saja
             localStorage.removeItem("authenticationToken")
@@ -140,7 +140,7 @@ export function Layout(props: PropsWithChildren) {
               ) : (
                 <Stack direction="row" spacing={2} alignItems="center">
                   <Typography variant="body2" sx={{ color: 'white' }}>
-                    Halo, <strong>{userInfo.name}</strong>
+                    Halo, <strong>{userInfo.user.name}</strong>
                   </Typography>
                   <Button 
                     variant="outlined" 

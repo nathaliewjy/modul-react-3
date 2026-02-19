@@ -1,0 +1,33 @@
+Langkah :
+1. Bikin types.ts 
+
+2. Bikin redux/authSlice.ts terus daftarin di store.ts 
+    - Fungsi :  - nyimpen data user yang lagi login
+                - bisa diakses dari page manapun (Layout buat nama user, Card buat pemilik post)
+
+3. Bikin config/AppRoutes.tsx
+    - Fungsi : - bikin peta
+    - Alur : Setting BrowserRouter -> Bikin rute /login, /post, /post/edit/:id.
+
+4. LoginPage : 
+    - Input email & password
+    - Kirim ke API
+    - Dapet access token & data user
+    - Nyimpen token di localStorage
+    - Nyimpen data user di redux
+
+5. Layout :
+    - Tiap page di-refresh, aplikasinya cek localStorage
+    - Kalo ada token, manggil /api/auth/me buat ngisi ulang redux jadi user gaperlu login terus
+
+6. PostListPage : 
+    - useEffect : ambil data dari API pas page pertama kali dibuka
+    - useState : nyimpen hasil API ke variable PostListPage
+    - useMemo : bagian search & sort
+        - Alur : - ambil data asli (posts)
+                 - filter based on input search
+                 - sort based on button
+                 - hasilnya ditaruh di displayPosts
+
+7. PostListPageCard : 
+    - 

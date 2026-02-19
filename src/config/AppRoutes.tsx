@@ -110,7 +110,7 @@ export const AppRoutes = () => {
           if (response.ok) {
             const userData = await response.json()
             // Isi kembali Redux-nya
-            dispatch(authActions.setUserInfo(userData))
+            dispatch(authActions.setUserInfo(userData.user))
           } else {
             // Kalau token ternyata sudah mati (expired), hapus dari storage
             localStorage.removeItem("token")

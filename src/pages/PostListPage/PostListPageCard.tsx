@@ -16,10 +16,10 @@ export function PostListPageCard(props: PostListPageCardProps) {
   const navigate = useNavigate()
   const userInfo = useAppSelector((state) => state.auth.userInfo)
 
-  console.log("ID Saya:", userInfo?.id)
+  console.log("ID Saya:", userInfo?.user?.id)
   console.log("ID Pemilik Post:", post.userId)
-  
-  const isMyPost = userInfo?.id === post.userId
+
+  const isMyPost = userInfo?.user?.id === post.userId
 
   return <Card >
     <CardHeader

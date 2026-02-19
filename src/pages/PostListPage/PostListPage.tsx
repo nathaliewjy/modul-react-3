@@ -5,54 +5,44 @@ import { Title } from "../../components/Title"
 import { PostListPageCard } from "./PostListPageCard"
 import { PostListPageSekeletonCard } from "./PostListPageSkeletonCard"
 import { wait } from "../../utils/wait"
-import { Link } from "react-router"
-
+import { Link } from "react-router-dom" // Pastikan react-router-dom
 
 export default function PostListPage() {
     const [posts, setPosts] = useState<Post[]>([])
-    // const [postInfo, setPostInfo] = useState<PostListResponse['info']>({ count: 0 })
     const [isLoading, setIsLoading] = useState(false)
-    // const [hasError, setHasError] = useState(false)
-
     const [search, setSearch] = useState("")
     const [sortBy, setSortBy] = useState("createdAt")
     const [isSortAscending, setIsSortAscending] = useState(true)
 
     async function reloadPosts() {
-
-        // setHasError(false)
         setIsLoading(true)
         try {
             const response = await fetch('/api/post')
-            await wait(3000) // biar keliatan skeletonnya
-            if (!response.ok) {
-                // setHasError(true)
-                return
-            }
+            await wait(1000) // 3 detik kelamaan, 1 detik saja cukup buat tes
+            if (!response.ok) return
             const data = await response.json() as PostListResponse
             setPosts(data.records)
-            // setPostInfo(data.info)
-        } catch {
-            // setHasError(true)
+        } catch (error) {
+            console.error("Gagal load post", error)
         }
         setIsLoading(false)
     }
 
     useEffect(() => {
-
         reloadPosts()
     }, [])
 
+    // 1. LOGIC FILTER & SORT (useMemo berhenti di sini)
     const displayPosts = useMemo(() => {
-        // 1. Filter berdasarkan search
         let filtered = posts.filter(p =>
             p.title.toLowerCase().includes(search.toLowerCase()) ||
             p.user.name.toLowerCase().includes(search.toLowerCase())
         )
 
-        // 2. Sort data
         return filtered.sort((a, b) => {
-            let fieldA: string, fieldB: string
+            let fieldA: string = ""
+            let fieldB: string = ""
+
             if (sortBy === 'title') {
                 fieldA = a.title; fieldB = b.title
             } else if (sortBy === 'userName') {
@@ -66,10 +56,11 @@ export default function PostListPage() {
         })
     }, [posts, search, sortBy, isSortAscending])
 
+    // 2. FUNGSI DELETE (Berdiri sendiri, bukan di dalam useMemo)
     const handleDelete = async (id: string) => {
         if (!window.confirm("Yakin ingin menghapus post ini?")) return
 
-        const token = localStorage.getItem("token")
+        const token = localStorage.getItem("authenticationToken") || localStorage.getItem("token")
         const response = await fetch(`/api/post/${id}`, {
             method: "DELETE",
             headers: {
@@ -78,76 +69,68 @@ export default function PostListPage() {
         })
 
         if (response.ok) {
-            // Panggil reload agar list post terupdate tanpa refresh halaman
             reloadPosts()
         } else {
             alert("Gagal menghapus post")
         }
     }
 
-    return <Container>
-        <Box justifyContent='center' display='flex'>
-            <Title>Posts</Title>
-        </Box>
-
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }} alignItems="center" justifyContent="center">
-            <input
-                placeholder="Cari judul atau user..."
-                style={{ padding: '10px 20px', borderRadius: '20px', width: '300px', border: '1px solid #ccc' }}
-                onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <Box display="flex" gap={1}>
-                <Button variant="outlined" size="small" onClick={() => { setSortBy('title'); setIsSortAscending(!isSortAscending); }}>
-                    Title {sortBy === 'title' ? (isSortAscending ? '↑' : '↓') : ''}
-                </Button>
-                <Button variant="outlined" size="small" onClick={() => { setSortBy('userName'); setIsSortAscending(!isSortAscending); }}>
-                    User {sortBy === 'userName' ? (isSortAscending ? '↑' : '↓') : ''}
-                </Button>
-                <Button variant="outlined" size="small" onClick={() => { setSortBy('createdAt'); setIsSortAscending(!isSortAscending); }}>
-                    Date {sortBy === 'createdAt' ? (isSortAscending ? '↑' : '↓') : ''}
-                </Button>
+    // 3. TAMPILAN UI
+    return (
+        <Container>
+            <Box justifyContent='center' display='flex' mb={3}>
+                <Title>Forum Feed</Title>
             </Box>
 
-            <Link to="/post/create" style={{ textDecoration: 'none' }}>
-                <Button variant="contained">Add Post</Button>
-            </Link>
-        </Stack>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }} alignItems="center" justifyContent="center">
+                <input
+                    placeholder="Cari judul atau user..."
+                    style={{ padding: '10px 20px', borderRadius: '20px', width: '300px', border: '1px solid #ccc' }}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
 
-        <Box display="flex" justifyContent="flex-end">
-            <Link to="/post/create">
-                <Button>
-                    Add Post
-                </Button>
-            </Link>
-        </Box>
+                <Box display="flex" gap={1}>
+                    <Button variant="outlined" size="small" onClick={() => { setSortBy('title'); setIsSortAscending(!isSortAscending); }}>
+                        Title {sortBy === 'title' ? (isSortAscending ? '↑' : '↓') : ''}
+                    </Button>
+                    <Button variant="outlined" size="small" onClick={() => { setSortBy('userName'); setIsSortAscending(!isSortAscending); }}>
+                        User {sortBy === 'userName' ? (isSortAscending ? '↑' : '↓') : ''}
+                    </Button>
+                    <Button variant="outlined" size="small" onClick={() => { setSortBy('createdAt'); setIsSortAscending(!isSortAscending); }}>
+                        Date {sortBy === 'createdAt' ? (isSortAscending ? '↑' : '↓') : ''}
+                    </Button>
+                </Box>
 
-        <Box py={2}>
-            <Paper>
-                <Stack p={2} gap={2}>
-                    <Box justifyContent='center' display='flex'>
-                        <Title>Posts</Title>
-                    </Box>
-                    {isLoading && <Grid container spacing={2}>
-                        <Grid size={{ md: 4 }}>
-                            <PostListPageSekeletonCard />
-                        </Grid>
-                        <Grid size={{ md: 4 }}>
-                            <PostListPageSekeletonCard />
-                        </Grid>
-                        <Grid size={{ md: 4 }}>
-                            <PostListPageSekeletonCard />
-                        </Grid>
-                    </Grid>}
-                    <Grid container spacing={2}>
-                        {posts.map(record =>
-                            <Grid key={record.id} size={{ md: 4 }}>
-                                <PostListPageCard post={record} onDelete={handleDelete} />
+                <Link to="/post/create" style={{ textDecoration: 'none' }}>
+                    <Button variant="contained">Add Post</Button>
+                </Link>
+            </Stack>
+
+            <Box py={2}>
+                <Paper sx={{ p: 2 }}>
+                    <Stack gap={2}>
+                        {isLoading && (
+                            <Grid container spacing={2}>
+                                {[1, 2, 3].map((i) => (
+                                    <Grid key={i} size={{ md: 4 }}>
+                                        <PostListPageSekeletonCard />
+                                    </Grid>
+                                ))}
                             </Grid>
                         )}
-                    </Grid>
-                </Stack>
-            </Paper>
-        </Box>
-    </Container>
+
+                        {!isLoading && (
+                            <Grid container spacing={2}>
+                                {displayPosts.map(record => (
+                                    <Grid key={record.id} size={{ md: 4 }}>
+                                        <PostListPageCard post={record} onDelete={handleDelete} />
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        )}
+                    </Stack>
+                </Paper>
+            </Box>
+        </Container>
+    )
 }

@@ -1,9 +1,19 @@
+// export type UserInfo = {
+//   id: string
+//   name: string
+//   email: string
+//   role: string
+// }
+
 export type UserInfo = {
-  id: string
-  name: string
-  email: string
-  role: string
-}
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  accessToken?: string; // opsional jika ada
+};
 
 export type Post = {
   id: string
